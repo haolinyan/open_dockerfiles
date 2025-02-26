@@ -53,51 +53,51 @@ RUN apt install -y \
     cmake \
     libssl-dev
 
-# Clone the switchml repo and compile the client library with the benchmarks and examples.
-ARG SWITCHML_UPDATED
-RUN git clone https://github.com/p4lang/p4app-switchML.git /home/switchml && \
-    cd /home/switchml/dev_root && \
-    git submodule update --init --recursive -- third_party/vcl && \
-    git submodule update --init --recursive -- third_party/grpc && \
-    make RDMA=1 TIMEOUTS=${TIMEOUTS} VCL=${VCL} DEBUG=${DEBUG}
+# # Clone the switchml repo and compile the client library with the benchmarks and examples.
+# ARG SWITCHML_UPDATED
+# RUN git clone https://github.com/p4lang/p4app-switchML.git /home/switchml && \
+#     cd /home/switchml/dev_root && \
+#     git submodule update --init --recursive -- third_party/vcl && \
+#     git submodule update --init --recursive -- third_party/grpc && \
+#     make RDMA=1 TIMEOUTS=${TIMEOUTS} VCL=${VCL} DEBUG=${DEBUG}
 
-# Register the compiled GRPC
-# You can skip this step however you would need to use the LD_LIBRARY_PATH variable each time you run 
-# any application with switchml
-RUN echo /home/switchml/dev_root/third_party/grpc/build/lib > /etc/ld.so.conf.d/000_grpc.conf && \
-    ldconfig
+# # Register the compiled GRPC
+# # You can skip this step however you would need to use the LD_LIBRARY_PATH variable each time you run 
+# # any application with switchml
+# RUN echo /home/switchml/dev_root/third_party/grpc/build/lib > /etc/ld.so.conf.d/000_grpc.conf && \
+#     ldconfig
 
-# At this point the microbenchmark can be run with the rdma backend.
+# # At this point the microbenchmark can be run with the rdma backend.
 
-# Install miniconda
-RUN cd /usr/local && \
-    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ./miniconda.sh && \
-    bash miniconda.sh -b -p /usr/local/conda && \
-    rm miniconda.sh && \
-    /usr/local/conda/bin/conda init bash && \
-    /usr/local/conda/bin/conda install -y numpy jupyter matplotlib
-ENV PATH $PATH:/usr/local/conda/bin
+# # Install miniconda
+# RUN cd /usr/local && \
+#     wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ./miniconda.sh && \
+#     bash miniconda.sh -b -p /usr/local/conda && \
+#     rm miniconda.sh && \
+#     /usr/local/conda/bin/conda init bash && \
+#     /usr/local/conda/bin/conda install -y numpy jupyter matplotlib
+# ENV PATH $PATH:/usr/local/conda/bin
 
-# Install pytorch requirments
-RUN conda env update --name base --file /home/switchml/dev_root/frameworks_integration/pytorch_patch/environment.yml
+# # Install pytorch requirments
+# RUN conda env update --name base --file /home/switchml/dev_root/frameworks_integration/pytorch_patch/environment.yml
 
-# Download PyTorch and checkout to 1.7.1 
-RUN git clone https://github.com/pytorch/pytorch.git /home/pytorch && \
-    cd /home/pytorch && \
-    git checkout 57bffc3 && \
-    git submodule sync && \
-    git submodule update --init --recursive
+# # Download PyTorch and checkout to 1.7.1 
+# RUN git clone https://github.com/pytorch/pytorch.git /home/pytorch && \
+#     cd /home/pytorch && \
+#     git checkout 57bffc3 && \
+#     git submodule sync && \
+#     git submodule update --init --recursive
 
-# Make and apply the PyTorch patch
-RUN cd /home/switchml/dev_root/ && \
-    make pytorch_patch RDMA=1 && \
-    git apply /home/switchml/dev_root/build/switchml_pytorch.patch
+# # Make and apply the PyTorch patch
+# RUN cd /home/switchml/dev_root/ && \
+#     make pytorch_patch RDMA=1 && \
+#     git apply /home/switchml/dev_root/build/switchml_pytorch.patch
 
-# Build PyTorch
-RUN cd /home/pytorch && \
-    CUDA_HOME=/usr/local/conda/ BUILD_TEST=0 /usr/local/conda/bin/python setup.py install --prefix=/usr/local/conda/ 2>&1 | tee build.log
+# # Build PyTorch
+# RUN cd /home/pytorch && \
+#     CUDA_HOME=/usr/local/conda/ BUILD_TEST=0 /usr/local/conda/bin/python setup.py install --prefix=/usr/local/conda/ 2>&1 | tee build.log
 
-# At this point you have the base conda environment with switchml integrated into pytorch.
-# You can run training scripts and benchmarks and switchml will kick in for all reduce operations
-# that it can handle. Just make sure to use the gloo pytorch backend as that's
-# the pytorch backend we integrate into.
+# # At this point you have the base conda environment with switchml integrated into pytorch.
+# # You can run training scripts and benchmarks and switchml will kick in for all reduce operations
+# # that it can handle. Just make sure to use the gloo pytorch backend as that's
+# # the pytorch backend we integrate into.
