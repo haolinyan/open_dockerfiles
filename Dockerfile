@@ -14,10 +14,6 @@ FROM nvidia/cuda:11.2.2-devel-ubuntu18.04
 # Set default shell to /bin/bash
 SHELL ["/bin/bash", "-cu"]
 
-ARG TIMEOUTS=1
-ARG VCL=1
-ARG DEBUG=0
-
 # General packages needed
 RUN apt-get update && \
     apt install -y \
@@ -53,13 +49,13 @@ RUN apt install -y \
     cmake \
     libssl-dev
 
-# Clone the switchml repo and compile the client library with the benchmarks and examples.
-ARG SWITCHML_UPDATED
-RUN git clone https://github.com/p4lang/p4app-switchML.git /home/switchml && \
-    cd /home/switchml/dev_root && \
-    git submodule update --init --recursive -- third_party/vcl && \
-    git submodule update --init --recursive -- third_party/grpc && \
-    make RDMA=1 TIMEOUTS=${TIMEOUTS} VCL=${VCL} DEBUG=${DEBUG}
+# # Clone the switchml repo and compile the client library with the benchmarks and examples.
+# ARG SWITCHML_UPDATED
+# RUN git clone https://github.com/p4lang/p4app-switchML.git /home/switchml && \
+#     cd /home/switchml/dev_root && \
+#     git submodule update --init --recursive -- third_party/vcl && \
+#     git submodule update --init --recursive -- third_party/grpc && \
+#     make RDMA=1 TIMEOUTS=${TIMEOUTS} VCL=${VCL} DEBUG=${DEBUG}
 
 # # Register the compiled GRPC
 # # You can skip this step however you would need to use the LD_LIBRARY_PATH variable each time you run 
