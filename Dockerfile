@@ -57,3 +57,13 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
 RUN apt-get update && apt-get install -y --no-install-recommends cmake && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+ENV PATH=/usr/local/mpi/bin:${PATH} \
+    CPATH=/usr/lib/x86_64-linux-gnu/openmpi/include:${CPATH} \
+    LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/openmpi/lib:${LD_LIBRARY_PATH} 
+# Create a wrapper for OpenMPI to allow running as root by default
+RUN mv /usr/bin/mpirun /usr/bin/mpirun.real && \
+    mkdir -p /usr/local/mpi/bin && \
+    echo '#!/bin/bash' > /usr/local/mpi/bin/mpirun && \
+    echo 'mpirun.real --allow-run-as-root "$@"' >> /usr/local/mpi/bin/mpirun && \
+    chmod a+x /usr/local/mpi/bin/mpirun
+RUN sudo apt-get update && sudo apt-get install flex bison byacc autoconf automake libtool -y && sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/*
