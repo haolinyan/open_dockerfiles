@@ -54,21 +54,6 @@ RUN apt install -y \
     cmake \
     libssl-dev libpcap-dev perftest
 
-# Clone the switchml repo and compile the client library with the benchmarks and examples.
-ARG SWITCHML_UPDATED
-RUN git clone https://github.com/p4lang/p4app-switchML.git /home/switchml && \
-    cd /home/switchml/dev_root && \
-    git submodule update --init --recursive -- third_party/vcl && \
-    git submodule update --init --recursive -- third_party/grpc && \
-    make RDMA=1 TIMEOUTS=${TIMEOUTS} VCL=${VCL} DEBUG=${DEBUG}
-
-# Register the compiled GRPC
-# You can skip this step however you would need to use the LD_LIBRARY_PATH variable each time you run 
-# any application with switchml
-RUN echo /home/switchml/dev_root/third_party/grpc/build/lib > /etc/ld.so.conf.d/000_grpc.conf && \
-    ldconfig
-
-# At this point the microbenchmark can be run with the rdma backend.
 RUN git clone https://github.com/the-tcpdump-group/tcpdump.git /usr/local/tcpdump && \
     git clone https://github.com/the-tcpdump-group/libpcap.git /usr/local/libpcap && \
     cd /usr/local/libpcap && git checkout libpcap-1.10.4 && \
