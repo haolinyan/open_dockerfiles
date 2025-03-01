@@ -52,7 +52,7 @@ RUN apt install -y \
     libibverbs-dev \
     libhugetlbfs-dev \
     cmake \
-    libssl-dev libpcap-dev perftest
+    libssl-dev libpcap-dev perftest flex lex
 
 RUN git clone https://github.com/the-tcpdump-group/tcpdump.git /usr/local/tcpdump && \
     git clone https://github.com/the-tcpdump-group/libpcap.git /usr/local/libpcap && \
